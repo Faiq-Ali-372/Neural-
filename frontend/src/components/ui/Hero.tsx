@@ -311,25 +311,99 @@ export default function HeroSection({ onLaunchAgent, onExploreModels }: HeroSect
         </span>
       </motion.h1>
 
-      {/* Subtitle */}
-      <motion.p
+      {/* Subtitle / Feature Badges */}
+      <motion.div
         variants={item}
         style={{
-          fontSize: 18,
-          lineHeight: 1.7,
-          color: '#f1f5f9',
-          maxWidth: 580,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 20,
           marginBottom: 44,
-          fontWeight: 500,
+          maxWidth: 700,
         }}
       >
-        <span style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 4 }}>
-          <motion.span whileHover={{ color: '#a78bfa', textShadow: '0 0 12px rgba(167,139,250,0.4)' }} style={{ color: '#fff', transition: 'color 0.2s', cursor: 'default' }}>Deploy models.</motion.span>
-          <motion.span whileHover={{ color: '#60a5fa', textShadow: '0 0 12px rgba(96,165,250,0.4)' }} style={{ color: '#fff', transition: 'color 0.2s', cursor: 'default' }}>Rent GPUs.</motion.span>
-          <motion.span whileHover={{ color: '#34d399', textShadow: '0 0 12px rgba(52,211,153,0.4)' }} style={{ color: '#fff', transition: 'color 0.2s', cursor: 'default' }}>Trade datasets.</motion.span>
-        </span>
-        <span style={{ color: '#a1a1aa' }}>Everything settled on-chain in milliseconds.</span>
-      </motion.p>
+        <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
+          {/* Models Badge */}
+          <motion.div
+            whileHover={{ scale: 1.05, y: -2, boxShadow: '0 0 25px rgba(167, 139, 250, 0.4)' }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            style={{
+              padding: '8px 20px',
+              borderRadius: 100,
+              background: 'linear-gradient(180deg, rgba(167,139,250,0.15) 0%, rgba(139,92,246,0.05) 100%)',
+              border: '1px solid rgba(167,139,250,0.3)',
+              boxShadow: '0 0 15px rgba(167,139,250,0.15), inset 0 1px 0 rgba(255,255,255,0.1)',
+              color: '#ddd6fe',
+              fontWeight: 600,
+              fontSize: 15,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              cursor: 'default',
+              backdropFilter: 'blur(10px)',
+            }}
+          >
+            <span style={{ fontSize: 16 }}>🧩</span> Deploy Models
+          </motion.div>
+
+          {/* GPUs Badge */}
+          <motion.div
+            whileHover={{ scale: 1.05, y: -2, boxShadow: '0 0 25px rgba(56, 189, 248, 0.4)' }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            style={{
+              padding: '8px 20px',
+              borderRadius: 100,
+              background: 'linear-gradient(180deg, rgba(56,189,248,0.15) 0%, rgba(14,165,233,0.05) 100%)',
+              border: '1px solid rgba(56,189,248,0.3)',
+              boxShadow: '0 0 15px rgba(56,189,248,0.15), inset 0 1px 0 rgba(255,255,255,0.1)',
+              color: '#bae6fd',
+              fontWeight: 600,
+              fontSize: 15,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              cursor: 'default',
+              backdropFilter: 'blur(10px)',
+            }}
+          >
+            <span style={{ fontSize: 16 }}>🖥️</span> Rent GPUs
+          </motion.div>
+
+          {/* Datasets Badge */}
+          <motion.div
+            whileHover={{ scale: 1.05, y: -2, boxShadow: '0 0 25px rgba(52, 211, 153, 0.4)' }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            style={{
+              padding: '8px 20px',
+              borderRadius: 100,
+              background: 'linear-gradient(180deg, rgba(52,211,153,0.15) 0%, rgba(16,185,129,0.05) 100%)',
+              border: '1px solid rgba(52,211,153,0.3)',
+              boxShadow: '0 0 15px rgba(52,211,153,0.15), inset 0 1px 0 rgba(255,255,255,0.1)',
+              color: '#a7f3d0',
+              fontWeight: 600,
+              fontSize: 15,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              cursor: 'default',
+              backdropFilter: 'blur(10px)',
+            }}
+          >
+            <span style={{ fontSize: 16 }}>🗃️</span> Trade Datasets
+          </motion.div>
+        </div>
+
+        <p style={{ color: '#94a3b8', fontSize: 17, fontWeight: 500, margin: 0, letterSpacing: '0.01em' }}>
+          Everything settled on-chain in milliseconds.
+        </p>
+      </motion.div>
 
       {/* CTAs */}
       <motion.div

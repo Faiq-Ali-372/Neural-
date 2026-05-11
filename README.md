@@ -48,24 +48,23 @@ CreatorVault    seeds=["vault", creator_pubkey]      → SOL accumulator for cre
 
 ## 🚀 Features
 
-### Core Platform
-- **AI Model Marketplace** — Browse, filter, and pay-per-use 9+ production AI models
-- **Smart Router** — Multi-criteria model selection (accuracy, speed, cost, keywords)
-- **Multi-Agent Orchestration** — 4 parallel AI agents synthesize answers
-- **Workflow Builder** — Node-based pipeline editor with topological execution
-- **AI Battle Arena** — Run 3 models head-to-head on the same task
+### Core Platform (DePIN)
+- **AI Model Marketplace** — Browse, filter, and pay-per-use production AI models.
+- **Dataset Marketplace** — Upload, browse, and purchase datasets using SOL.
+- **GPU Compute Rentals** — Rent high-end GPUs with trustless Solana Escrow payments. 
+- **Universal Asset Library** — Track your purchased Models, Datasets, and active GPU rentals in one unified dashboard.
+- **x402 Payment Streaming** — Machine-to-machine streaming payments for GPU compute time.
 
-### Creator Economy
-- **Deploy Models** — Any wallet can submit an AI model for review
-- **Admin Governance** — Admin approves/rejects models before marketplace listing
-- **On-Chain Revenue** — Smart contract automatically splits payments (95/5)
-- **Creator Dashboard** — Real earnings, model stats, usage charts
+### Creator Economy & Governance
+- **List Assets** — Any wallet can submit an AI Model, Dataset, or GPU for review.
+- **Trustless Approval Workflow** — Uploaded assets enter a "Pending Approval" queue.
+- **Admin Governance Panel** — Admin can review, approve, or reject submissions before marketplace listing.
+- **On-Chain Revenue** — Smart contract automatically splits payments (95/5) between creators and the platform.
 
 ### Infrastructure
-- **Rate Limiting** — 60 req/min via `slowapi`
-- **GZip Compression** — Payloads ≥512 bytes compressed automatically
-- **Devnet Integration** — Phantom wallet, real SOL transfers, on-chain verification
-- **WebSocket Streaming** — Real-time workflow execution progress
+- **Solana Devnet Integration** — Phantom wallet integration, real SOL transfers, and on-chain verification.
+- **Rate Limiting** — 60 req/min via `slowapi` on the backend.
+- **GZip Compression** — Payloads ≥512 bytes compressed automatically.
 
 ---
 
@@ -78,21 +77,21 @@ Web3 Project/
 │
 ├── backend/                      ← FastAPI Python backend
 │   ├── app/
-│   │   ├── api/                  ← Route handlers (9 modules)
-│   │   ├── services/             ← Business logic (AI router, Solana, agents)
+│   │   ├── api/                  ← Route handlers
+│   │   ├── services/             ← Business logic
 │   │   ├── db/                   ← SQLAlchemy models + seeding
 │   │   └── core/config.py        ← Settings (reads .env)
 │   └── requirements.txt
 │
 ├── frontend/                     ← Next.js 16 frontend
 │   ├── src/
-│   │   ├── app/page.tsx          ← Root layout + routing
-│   │   ├── components/pages/     ← 12 full page components
+│   │   ├── app/page.tsx          ← Root layout + shared state
+│   │   ├── components/pages/     ← Full page components (Compute, Datasets, Admin, Library, etc.)
 │   │   ├── lib/
 │   │   │   ├── api.ts            ← Typed API client
 │   │   │   ├── program.ts        ← Solana program SDK
 │   │   │   └── constants.ts      ← Design tokens + model data
-│   │   └── components/wallet/    ← Phantom wallet + PaymentModal
+│   │   └── components/wallet/    ← Phantom wallet + Escrow/Payment modals
 │   └── package.json
 │
 ├── docker-compose.yml            ← One-command dev environment
@@ -156,10 +155,6 @@ NEXT_PUBLIC_PLATFORM_WALLET=7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU
 
 ## 📦 Deployment
 
-#   - frontend/.env.local   → NEXT_PUBLIC_PROGRAM_ID=<YOUR_PROGRAM_ID>
-#   - README.md             → Update the table at the top
-```
-
 ### Initialize the Platform On-Chain (first time only)
 
 After deployment, call `initialize_platform` once to set up the PDA:
@@ -184,29 +179,6 @@ anchor run initialize --provider.cluster devnet
 
 ---
 
-## 🏗️ Architecture
-
-```
-User Browser (Next.js 16)
-    │
-    ├── Phantom Wallet ──► Solana Devnet ──► NEURAL Program (Rust/Anchor)
-    │                                              │
-    │                                         pay_inference()
-    │                                         95% → creator vault PDA
-    │                                         5%  → platform wallet
-    │
-    └── HTTP/WS ──► FastAPI Backend (Python)
-                         │
-                    ┌────┴────┐
-                    │  SQLite │  (dev) / PostgreSQL (prod)
-                    └─────────┘
-                    AI Router ─► MODEL_REGISTRY (9 models)
-                    Multi-Agent ─► 4 parallel agents
-                    Workflows ─► Topological execution engine
-```
-
----
-
 ## 📊 API Reference
 
 | Method | Endpoint                          | Description                          |
@@ -214,10 +186,6 @@ User Browser (Next.js 16)
 | GET    | `/`                               | Health + feature list                |
 | GET    | `/api/models`                     | List all marketplace models          |
 | POST   | `/api/model/{key}`                | Run inference on a model             |
-| POST   | `/api/agent/orchestrate`          | Multi-agent task execution           |
-| POST   | `/api/router/analyze`             | Smart model recommendation           |
-| POST   | `/api/router/battle`              | Model vs model comparison            |
-| POST   | `/api/workflows/execute`          | Execute a node pipeline              |
 | POST   | `/api/deploy/model`               | Submit a model for review            |
 | GET    | `/api/deploy/marketplace`         | List all approved creator models     |
 | POST   | `/api/deploy/approve/{key}`       | Admin: approve a pending model       |
@@ -241,8 +209,6 @@ pytest
 cd frontend
 npx tsc --noEmit    # 0 errors expected
 ```
-
-
 
 ---
 

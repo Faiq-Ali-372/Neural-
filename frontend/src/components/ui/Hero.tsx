@@ -1,11 +1,14 @@
 'use client';
-import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import ThreeParticleBackground from '@/components/ui/ThreeParticleBackground';
 
 interface HeroSectionProps {
   onLaunchAgent: () => void;
   onExploreModels: () => void;
 }
+
+const WORDS = ['DePIN Compute', 'AI Models', 'Datasets'];
 
 const container = {
   hidden: { opacity: 0 },
@@ -25,6 +28,14 @@ const item = {
 };
 
 export default function HeroSection({ onLaunchAgent, onExploreModels }: HeroSectionProps) {
+  const [activeWord, setActiveWord] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveWord((prev) => (prev + 1) % WORDS.length);
+    }, 2500);
+    return () => clearInterval(interval);
+  }, []);
   return (
     <>
       <motion.div
@@ -311,21 +322,44 @@ export default function HeroSection({ onLaunchAgent, onExploreModels }: HeroSect
         </span>
       </motion.h1>
 
-      {/* Subtitle */}
+      {/* Subtitle with Interactive Cycling */}
       <motion.p
         variants={item}
         style={{
           fontSize: 18,
           lineHeight: 1.7,
           color: '#f1f5f9',
-          maxWidth: 520,
+          maxWidth: 600,
           marginBottom: 44,
           fontWeight: 500,
+          minHeight: 60, // Keep height stable during animation
         }}
       >
-        Deploy models. Run inference. Orchestrate agents.
-        <br />
-        <span style={{ color: '#a1a1aa' }}>Everything settled on-chain in milliseconds.</span>
+        <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: 6 }}>
+          <span>Access world-class</span>
+          <span style={{ position: 'relative', width: 140, height: 26, display: 'inline-block', overflow: 'hidden' }}>
+            <AnimatePresence mode="popLayout">
+              <motion.span
+                key={activeWord}
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: -20, opacity: 0 }}
+                transition={{ duration: 0.4, ease: 'easeOut' }}
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  width: '100%',
+                  textAlign: 'center',
+                  color: activeWord === 0 ? '#10F5A0' : activeWord === 1 ? '#60a5fa' : '#a78bfa',
+                  fontWeight: 800,
+                }}
+              >
+                {WORDS[activeWord]}
+              </motion.span>
+            </AnimatePresence>
+          </span>
+          <span>settled on-chain in milliseconds.</span>
+        </span>
       </motion.p>
 
       {/* CTAs */}

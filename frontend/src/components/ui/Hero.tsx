@@ -323,80 +323,80 @@ export default function HeroSection({ onLaunchAgent, onExploreModels }: HeroSect
           maxWidth: 700,
         }}
       >
-        <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
           {/* Models Badge */}
           <motion.div
-            whileHover={{ scale: 1.05, y: -2, boxShadow: '0 0 25px rgba(167, 139, 250, 0.4)' }}
+            whileHover={{ scale: 1.05, y: -2, boxShadow: '0 0 30px rgba(167, 139, 250, 0.5)' }}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
             style={{
-              padding: '8px 20px',
+              padding: '10px 24px',
               borderRadius: 100,
-              background: 'linear-gradient(180deg, rgba(167,139,250,0.15) 0%, rgba(139,92,246,0.05) 100%)',
-              border: '1px solid rgba(167,139,250,0.3)',
-              boxShadow: '0 0 15px rgba(167,139,250,0.15), inset 0 1px 0 rgba(255,255,255,0.1)',
-              color: '#ddd6fe',
-              fontWeight: 600,
-              fontSize: 15,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
+              background: 'linear-gradient(180deg, rgba(167,139,250,0.15) 0%, rgba(139,92,246,0.02) 100%)',
+              border: '1px solid rgba(167,139,250,0.4)',
+              boxShadow: '0 0 20px rgba(167,139,250,0.15), inset 0 1px 0 rgba(255,255,255,0.15)',
+              color: '#f8fafc',
+              fontWeight: 700,
+              fontSize: 13,
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
               cursor: 'default',
               backdropFilter: 'blur(10px)',
+              textShadow: '0 2px 10px rgba(167,139,250,0.8)'
             }}
           >
-            <span style={{ fontSize: 16 }}>🧩</span> Deploy Models
+            Deploy AI Models
           </motion.div>
 
           {/* GPUs Badge */}
           <motion.div
-            whileHover={{ scale: 1.05, y: -2, boxShadow: '0 0 25px rgba(56, 189, 248, 0.4)' }}
+            whileHover={{ scale: 1.05, y: -2, boxShadow: '0 0 30px rgba(56, 189, 248, 0.5)' }}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
             style={{
-              padding: '8px 20px',
+              padding: '10px 24px',
               borderRadius: 100,
-              background: 'linear-gradient(180deg, rgba(56,189,248,0.15) 0%, rgba(14,165,233,0.05) 100%)',
-              border: '1px solid rgba(56,189,248,0.3)',
-              boxShadow: '0 0 15px rgba(56,189,248,0.15), inset 0 1px 0 rgba(255,255,255,0.1)',
-              color: '#bae6fd',
-              fontWeight: 600,
-              fontSize: 15,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
+              background: 'linear-gradient(180deg, rgba(56,189,248,0.15) 0%, rgba(14,165,233,0.02) 100%)',
+              border: '1px solid rgba(56,189,248,0.4)',
+              boxShadow: '0 0 20px rgba(56,189,248,0.15), inset 0 1px 0 rgba(255,255,255,0.15)',
+              color: '#f8fafc',
+              fontWeight: 700,
+              fontSize: 13,
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
               cursor: 'default',
               backdropFilter: 'blur(10px)',
+              textShadow: '0 2px 10px rgba(56,189,248,0.8)'
             }}
           >
-            <span style={{ fontSize: 16 }}>🖥️</span> Rent GPUs
+            Rent DePIN GPUs
           </motion.div>
 
           {/* Datasets Badge */}
           <motion.div
-            whileHover={{ scale: 1.05, y: -2, boxShadow: '0 0 25px rgba(52, 211, 153, 0.4)' }}
+            whileHover={{ scale: 1.05, y: -2, boxShadow: '0 0 30px rgba(52, 211, 153, 0.5)' }}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
             style={{
-              padding: '8px 20px',
+              padding: '10px 24px',
               borderRadius: 100,
-              background: 'linear-gradient(180deg, rgba(52,211,153,0.15) 0%, rgba(16,185,129,0.05) 100%)',
-              border: '1px solid rgba(52,211,153,0.3)',
-              boxShadow: '0 0 15px rgba(52,211,153,0.15), inset 0 1px 0 rgba(255,255,255,0.1)',
-              color: '#a7f3d0',
-              fontWeight: 600,
-              fontSize: 15,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
+              background: 'linear-gradient(180deg, rgba(52,211,153,0.15) 0%, rgba(16,185,129,0.02) 100%)',
+              border: '1px solid rgba(52,211,153,0.4)',
+              boxShadow: '0 0 20px rgba(52,211,153,0.15), inset 0 1px 0 rgba(255,255,255,0.15)',
+              color: '#f8fafc',
+              fontWeight: 700,
+              fontSize: 13,
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
               cursor: 'default',
               backdropFilter: 'blur(10px)',
+              textShadow: '0 2px 10px rgba(52,211,153,0.8)'
             }}
           >
-            <span style={{ fontSize: 16 }}>🗃️</span> Trade Datasets
+            Trade Premium Datasets
           </motion.div>
         </div>
 

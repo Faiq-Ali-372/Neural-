@@ -19,6 +19,7 @@ const ICONS: Record<string, React.ReactNode> = {
   chart:    <><path d="M3 3v18h18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none"/><path d="M7 14l4-4 4 2 5-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/></>,
   settings: <><circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.5" fill="none"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none"/></>,
   shield:   <><path d="M12 2l8 4v6c0 5.25-3.5 8.75-8 10-4.5-1.25-8-4.75-8-10V6l8-4z" stroke="currentColor" strokeWidth="1.5" fill="none"/></>,
+  cpu:      <><rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" strokeWidth="1.5" fill="none"/><rect x="9" y="9" width="6" height="6" stroke="currentColor" strokeWidth="1.5" fill="none"/><path d="M9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none"/></>,
 };
 
 function NavIcon({ name }: { name: string }) {

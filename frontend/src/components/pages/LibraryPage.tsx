@@ -10,6 +10,7 @@ import type { TxStatus } from '@/components/ui/TransactionToast';
 interface Props {
   purchasedModels: Model[];
   purchasedDatasets: any[];
+  purchasedGpus: any[];
   onNavigate: (p: string) => void;
   setTxToast: (status: TxStatus, hash?: string) => void;
 }
@@ -27,16 +28,18 @@ const cardStyle: React.CSSProperties = {
   height: '100%',
 };
 
-export default function LibraryPage({ purchasedModels, purchasedDatasets, onNavigate, setTxToast }: Props) {
+export default function LibraryPage({ purchasedModels, purchasedDatasets, purchasedGpus, onNavigate, setTxToast }: Props) {
   const { publicKey, connected } = useWallet();
   const { balance } = useWalletState();
-  const [tab, setTab] = useState<'models' | 'datasets'>('models');
+  const [tab, setTab] = useState<'models' | 'datasets' | 'gpus'>('models');
   const [downloading, setDownloading] = useState<string | null>(null);
 
   const totalSpent = purchasedModels.reduce((acc, m) => {
     return acc + parseFloat(m.price.split(' ')[0]);
   }, 0) + purchasedDatasets.reduce((acc, d) => {
     return acc + (d.free ? 0 : parseFloat(d.price.split(' ')[0] || '0'));
+  }, 0) + purchasedGpus.reduce((acc: number, g: any) => {
+    return acc + parseFloat(g.totalCost || '0');
   }, 0);
 
   const handleDownload = (m: Model) => {
@@ -139,12 +142,12 @@ export default function LibraryPage({ purchasedModels, purchasedDatasets, onNavi
       ) : (
         <>
           <div style={{ display: 'flex', gap: 2, marginBottom: 24, background: '#0C1220', borderRadius: 10, padding: 4, width: 'fit-content', border: '1px solid rgba(255,255,255,0.06)' }}>
-            {(['models', 'datasets'] as const).map(t => (
+            {(['models', 'datasets', 'gpus'] as const).map(t => (
               <button key={t} onClick={() => setTab(t)}
                 style={{ padding: '6px 16px', borderRadius: 7, fontSize: 13, fontWeight: 600, cursor: 'pointer', border: 'none',
                   background: tab === t ? 'rgba(99,102,241,0.18)' : 'transparent',
                   color: tab === t ? '#F1F5F9' : '#94A3B8', textTransform: 'capitalize' }}>
-                {t} ({t === 'models' ? purchasedModels.length : purchasedDatasets.length})
+                {t === 'gpus' ? 'GPUs' : t} ({t === 'models' ? purchasedModels.length : t === 'datasets' ? purchasedDatasets.length : purchasedGpus.length})
               </button>
             ))}
           </div>
@@ -343,6 +346,79 @@ export default function LibraryPage({ purchasedModels, purchasedDatasets, onNavi
                       </motion.div>
                     );
                   })}
+                </AnimatePresence>
+              </div>
+            )
+          )}
+
+          {tab === 'gpus' && (
+            purchasedGpus.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '80px 0', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: 16 }}>
+                <div style={{ fontSize: 48, marginBottom: 16 }}>🖥️</div>
+                <div style={{ fontSize: 18, color: '#f5f5f5', fontWeight: 600, marginBottom: 8 }}>No GPU Rentals Yet</div>
+                <div style={{ color: '#CBD5E1', fontSize: 14, marginBottom: 24 }}>You haven't rented any GPU compute from the marketplace yet.</div>
+                <button
+                  onClick={() => onNavigate('compute')}
+                  style={{
+                    background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.3)',
+                    color: '#818cf8', padding: '10px 24px', borderRadius: 8, fontSize: 14, fontWeight: 600,
+                    cursor: 'pointer', transition: 'all 0.2s'
+                  }}
+                >Browse GPUs →</button>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
+                <AnimatePresence>
+                  {purchasedGpus.map((g: any, idx: number) => (
+                    <motion.div
+                      key={`${g.id}-${idx}`}
+                      initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      transition={{ delay: idx * 0.05 }}
+                      whileHover={{ y: -4, borderColor: 'rgba(99,102,241,0.4)', boxShadow: '0 12px 40px -10px rgba(99,102,241,0.3)' }}
+                      style={{
+                        ...cardStyle,
+                        borderLeft: '3px solid rgba(99,102,241,0.6)',
+                      }}
+                    >
+                      <div style={{ position: 'absolute', top: 0, right: 0, width: 120, height: 120, background: 'radial-gradient(circle at top right, rgba(99,102,241,0.15), transparent 70%)', pointerEvents: 'none' }} />
+
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12, position: 'relative', zIndex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <span style={{ fontSize: 22 }}>🖥️</span>
+                          <div>
+                            <div style={{ fontWeight: 800, fontSize: 16, color: '#F1F5F9' }}>{g.name}</div>
+                            <div style={{ fontSize: 11, color: '#64748B' }}>{g.providerName} · ⭐ {g.rating}</div>
+                          </div>
+                        </div>
+                        <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 20, background: 'rgba(52,211,153,0.15)', color: '#34d399', border: '1px solid rgba(52,211,153,0.3)', height: 'fit-content' }}>● Active</span>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 16, position: 'relative', zIndex: 1 }}>
+                        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 10, padding: '8px 4px', textAlign: 'center' }}>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: '#60a5fa' }}>{g.vram}</div>
+                          <div style={{ fontSize: 9, color: '#94A3B8', marginTop: 4, textTransform: 'uppercase' }}>VRAM</div>
+                        </div>
+                        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 10, padding: '8px 4px', textAlign: 'center' }}>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: '#a78bfa' }}>{g.rentedHours}h</div>
+                          <div style={{ fontSize: 9, color: '#94A3B8', marginTop: 4, textTransform: 'uppercase' }}>Duration</div>
+                        </div>
+                        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 10, padding: '8px 4px', textAlign: 'center' }}>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: '#fbbf24' }}>{g.totalCost} SOL</div>
+                          <div style={{ fontSize: 9, color: '#94A3B8', marginTop: 4, textTransform: 'uppercase' }}>Cost</div>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#64748B', marginBottom: 12, position: 'relative', zIndex: 1 }}>
+                        <span>📍 {g.location}</span>
+                        <span>Uptime: {g.uptime}%</span>
+                      </div>
+
+                      <div style={{ background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.15)', borderRadius: 8, padding: '8px 12px', fontSize: 12, color: '#34d399', fontWeight: 600, textAlign: 'center', position: 'relative', zIndex: 1 }}>
+                        🔒 Escrow Active · SOL streaming to provider
+                      </div>
+                    </motion.div>
+                  ))}
                 </AnimatePresence>
               </div>
             )

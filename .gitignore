@@ -24,6 +24,10 @@ env/
 .coverage
 htmlcov/
 .env
+*.db
+*.sqlite
+*.sqlite3
+backend/.env
 
 # Solana / Anchor
 target/

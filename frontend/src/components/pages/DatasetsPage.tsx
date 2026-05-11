@@ -1,9 +1,9 @@
 'use client';
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import type { LogLine, PendingPayment } from '@/app/page';
 
-interface Props { addLog:(m:string,t?:LogLine['type'])=>void; requestPayment:(p:PendingPayment)=>void; setLastModel:(m:any)=>void; onNavigate:(p:string)=>void; onPurchaseComplete?:(d:any)=>void; }
+interface Props { addLog:(m:string,t?:LogLine['type'])=>void; requestPayment:(p:PendingPayment)=>void; setLastModel:(m:any)=>void; onNavigate:(p:string)=>void; onPurchaseComplete?:(d:any)=>void; pendingDatasets?:any[]; approvedDatasets?:any[]; onAddPending?:(d:any)=>void; onRemovePending?:(name:string)=>void; }
 
 const DS_DATA = [
   { name:'crypto_sentiment', label:'Crypto Sentiment', desc:'2M tweets + Reddit posts labelled bullish/bearish', cat:'NLP', price:'0.05 SOL', rows:'2.1M rows', size:'340MB', downloads:841, free:false },
@@ -19,7 +19,7 @@ const inputStyle: React.CSSProperties = { width:'100%', background:'#111828', bo
 const labelStyle: React.CSSProperties = { fontSize:12, fontWeight:600, color:'#94A3B8', display:'block', marginBottom:6 };
 const cardStyle: React.CSSProperties = { background:'#0C1220', border:'1px solid rgba(255,255,255,0.06)', borderRadius:14, padding:18, marginBottom:14 };
 
-export default function DatasetsPage({ addLog, requestPayment, onPurchaseComplete }: Props) {
+export default function DatasetsPage({ addLog, requestPayment, onPurchaseComplete, pendingDatasets = [], approvedDatasets = [], onAddPending, onRemovePending }: Props) {
   const [tab, setTab] = useState<'browse'|'upload'|'mine'>('browse');
   const [filter, setFilter] = useState('All');
   const [search, setSearch] = useState('');
@@ -31,7 +31,6 @@ export default function DatasetsPage({ addLog, requestPayment, onPurchaseComplet
   const [dsFiles, setDsFiles] = useState<{name:string;size:number}[]>([]);
   const [myDatasets, setMyDatasets] = useState<typeof DS_DATA>([]);
   const [dragOver, setDragOver] = useState(false);
-  const fileRef = useRef<HTMLInputElement>(null);
 
   const visible = DS_DATA.filter(d => {
     const matchF = filter === 'All' || (filter === 'Free' ? d.free : d.cat === filter);
@@ -68,9 +67,11 @@ export default function DatasetsPage({ addLog, requestPayment, onPurchaseComplet
     if (dsFiles.length === 0) { addLog('[DATASET] Please upload a file', 'error'); return; }
     requestPayment({
       amount: '0.01 SOL', description: 'Dataset Publishing Fee', service: dsName,
-      onPaid: (sig) => {
-        setMyDatasets(m => [{ name: dsName.toLowerCase().replace(/\s+/g,'_'), label: dsName, desc: dsDesc || 'No description', cat: dsCat.split('/')[0].trim(), price: `${dsPrice} SOL`, rows: '?', size: dsFiles[0]?(dsFiles[0].size/1048576).toFixed(1)+'MB':'?', downloads:0, free: parseFloat(dsPrice) === 0 }, ...m]);
-        addLog(`[DATASET] Published: "${dsName}"`, 'success');
+      onPaid: () => {
+        const newDs = { name: dsName.toLowerCase().replace(/\s+/g,'_'), label: dsName, desc: dsDesc || 'No description', cat: dsCat.split('/')[0].trim(), price: `${dsPrice} SOL`, rows: '?', size: dsFiles[0]?(dsFiles[0].size/1048576).toFixed(1)+'MB':'?', downloads:0, free: parseFloat(dsPrice) === 0 };
+        onAddPending?.(newDs);
+        addLog(`[DATASET] "${dsName}" submitted for approval`, 'success');
+        addLog(`[DATASET] ⏳ Check Creator panel to review`, 'info');
         setDsName(''); setDsDesc(''); setDsFiles([]); setTab('mine');
       }
     });
@@ -255,15 +256,18 @@ export default function DatasetsPage({ addLog, requestPayment, onPurchaseComplet
           <div>
             <div style={cardStyle}>
               <h3 style={{ marginBottom:16 }}>Upload File</h3>
-              <div onDragOver={e=>{e.preventDefault();setDragOver(true);}} onDragLeave={()=>setDragOver(false)}
+              <label onDragOver={e=>{e.preventDefault();setDragOver(true);}} onDragLeave={()=>setDragOver(false)}
                 onDrop={e=>{e.preventDefault();setDragOver(false);setDsFiles(Array.from(e.dataTransfer.files).map(f=>({name:f.name,size:f.size})));}}
-                onClick={()=>fileRef.current?.click()}
-                style={{ border:`2px dashed ${dragOver?'rgba(99,102,241,0.5)':'rgba(99,102,241,0.2)'}`, borderRadius:12, padding:'24px 16px', textAlign:'center', cursor:'pointer', background:dragOver?'rgba(99,102,241,0.08)':'transparent', transition:'all .2s' }}>
+                style={{ display: 'block', border:`2px dashed ${dragOver?'rgba(99,102,241,0.5)':'rgba(99,102,241,0.2)'}`, borderRadius:12, padding:'24px 16px', textAlign:'center', cursor:'pointer', background:dragOver?'rgba(99,102,241,0.08)':'transparent', transition:'all .2s' }}>
                 <div style={{ fontSize:28, marginBottom:8 }}>📊</div>
                 <p style={{ fontWeight:600, fontSize:13, marginBottom:4 }}>Drag &amp; drop CSV / JSON</p>
                 <p style={{ fontSize:11.5, color:'#94A3B8' }}>Max 500MB · .csv .json .parquet .zip</p>
-                <input ref={fileRef} type="file" accept=".csv,.json,.parquet,.zip" style={{ display:'none' }} onChange={e=>setDsFiles(Array.from(e.target.files||[]).map(f=>({name:f.name,size:f.size})))} />
-              </div>
+                <input type="file" accept=".csv,.json,.parquet,.zip" style={{ display:'none' }} onChange={e=>{
+                  if(e.target.files && e.target.files.length > 0) {
+                    setDsFiles(Array.from(e.target.files).map(f=>({name:f.name,size:f.size})));
+                  }
+                }} />
+              </label>
               {dsFiles.map((f,i)=>(
                 <div key={i} style={{ display:'flex', gap:8, padding:'7px 10px', background:'rgba(99,102,241,0.06)', border:'1px solid rgba(99,102,241,0.15)', borderRadius:8, marginTop:8, fontSize:12 }}>
                   <span>📄</span><span style={{ flex:1 }}>{f.name}</span>
@@ -297,34 +301,78 @@ export default function DatasetsPage({ addLog, requestPayment, onPurchaseComplet
 
       {/* MY DATASETS TAB */}
       {tab === 'mine' && (
-        myDatasets.length === 0 ? (
-          <div style={{ ...cardStyle, textAlign:'center', padding:'60px 40px' }}>
-            <div style={{ fontSize:40, marginBottom:12 }}>🗃️</div>
-            <h3 style={{ marginBottom:8 }}>No datasets yet</h3>
-            <p style={{ color:'#94A3B8', fontSize:13, marginBottom:16 }}>Upload your first dataset to start earning SOL when others access it.</p>
-            <motion.button onClick={() => setTab('upload')} whileHover={{ scale:1.02 }}
-              style={{ padding:'9px 20px', background:'linear-gradient(135deg,#6366F1,#4F46E5)', color:'#fff', border:'none', borderRadius:9, fontSize:13, fontWeight:600, cursor:'pointer' }}>
-              Upload Dataset →
-            </motion.button>
-          </div>
-        ) : (
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))', gap:14 }}>
-            {myDatasets.map((d,i) => (
-              <div key={i} style={cardStyle}>
-                <div style={{ display:'flex', justifyContent:'space-between', marginBottom:10 }}>
-                  <span style={{ fontSize:10.5, fontWeight:600, padding:'2px 7px', borderRadius:5, background:'rgba(99,102,241,0.15)', color:'#6366F1' }}>{d.cat}</span>
-                  <span style={{ fontSize:10.5, fontWeight:600, padding:'2px 7px', borderRadius:5, background:'rgba(16,245,160,0.12)', color:'#10F5A0' }}>Mine</span>
-                </div>
-                <h3 style={{ marginBottom:6 }}>{d.label}</h3>
-                <p style={{ fontSize:12, color:'#94A3B8', marginBottom:10 }}>{d.desc}</p>
-                <div style={{ display:'flex', justifyContent:'space-between', fontSize:12 }}>
-                  <span style={{ color:'#10F5A0' }}>{d.price}</span>
-                  <span style={{ color:'#94A3B8' }}>⬇️ {d.downloads}</span>
-                </div>
+        <>
+          {/* Pending approval section */}
+          {pendingDatasets.length > 0 && (
+            <div style={{ marginBottom:20 }}>
+              <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:12 }}>
+                <span style={{ fontSize:16 }}>⏳</span>
+                <h3 style={{ fontSize:14, fontWeight:700, color:'#fbbf24', margin:0 }}>Pending Approval ({pendingDatasets.length})</h3>
               </div>
-            ))}
-          </div>
-        )
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))', gap:14 }}>
+                {pendingDatasets.map((d,i) => (
+                  <motion.div key={i} style={{ background:'rgba(251,191,36,0.04)', border:'1px solid rgba(251,191,36,0.15)', borderRadius:14, padding:18, opacity:0.85 }}>
+                    <div style={{ display:'flex', justifyContent:'space-between', marginBottom:10 }}>
+                      <span style={{ fontSize:10.5, fontWeight:600, padding:'2px 7px', borderRadius:5, background:'rgba(251,191,36,0.1)', color:'#fbbf24', border:'1px solid rgba(251,191,36,0.2)' }}>{d.cat}</span>
+                      <span style={{ fontSize:10.5, fontWeight:600, padding:'2px 7px', borderRadius:5, background:'rgba(251,191,36,0.12)', color:'#fbbf24' }}>⏳ Under Review</span>
+                    </div>
+                    <h3 style={{ marginBottom:6, color:'#F1F5F9' }}>{d.label}</h3>
+                    <p style={{ fontSize:12, color:'#94A3B8', marginBottom:12 }}>{d.desc}</p>
+                    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:6, marginBottom:10 }}>
+                      {[['Rows', d.rows, '#f5f5f5'], ['Size', d.size, '#60a5fa'], ['Price', d.price, '#fbbf24']].map(([l,v,c]) => (
+                        <div key={l as string} style={{ background:'rgba(255,255,255,0.02)', border:'1px solid rgba(255,255,255,0.04)', borderRadius:8, padding:'6px 4px', textAlign:'center' }}>
+                          <div style={{ fontSize:11, fontWeight:700, color:c as string }}>{v as string}</div>
+                          <div style={{ fontSize:9, color:'#64748B', marginTop:2, textTransform:'uppercase' }}>{l as string}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ fontSize:11, color:'#fbbf24', textAlign:'center', padding:'6px', background:'rgba(251,191,36,0.06)', borderRadius:6 }}>⏳ Awaiting team verification…</div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Approved datasets */}
+          {myDatasets.length === 0 && pendingDatasets.length === 0 ? (
+            <div style={{ ...cardStyle, textAlign:'center', padding:'60px 40px' }}>
+              <div style={{ fontSize:40, marginBottom:12 }}>🗃️</div>
+              <h3 style={{ marginBottom:8 }}>No datasets yet</h3>
+              <p style={{ color:'#94A3B8', fontSize:13, marginBottom:16 }}>Upload your first dataset to start earning SOL when others access it.</p>
+              <motion.button onClick={() => setTab('upload')} whileHover={{ scale:1.02 }}
+                style={{ padding:'9px 20px', background:'linear-gradient(135deg,#6366F1,#4F46E5)', color:'#fff', border:'none', borderRadius:9, fontSize:13, fontWeight:600, cursor:'pointer' }}>
+                Upload Dataset →
+              </motion.button>
+            </div>
+          ) : myDatasets.length > 0 && (
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))', gap:14 }}>
+              {myDatasets.map((d, i) => (
+                <motion.div key={i}
+                  whileHover={{ y:-3, borderColor:'rgba(16,245,160,0.3)', boxShadow:'0 12px 32px -8px rgba(16,245,160,0.15)' }}
+                  style={{ background:'rgba(16,245,160,0.03)', border:'1px solid rgba(16,245,160,0.1)', borderRadius:14, padding:18, display:'flex', flexDirection:'column' }}>
+                  <div style={{ display:'flex', justifyContent:'space-between', marginBottom:10 }}>
+                    <span style={{ fontSize:10.5, fontWeight:600, padding:'2px 7px', borderRadius:5, background:'rgba(99,102,241,0.15)', color:'#6366F1' }}>{d.cat}</span>
+                    <span style={{ fontSize:10.5, fontWeight:600, padding:'2px 7px', borderRadius:5, background:'rgba(16,245,160,0.12)', color:'#10F5A0' }}>✅ Live</span>
+                  </div>
+                  <h3 style={{ marginBottom:6, color:'#F1F5F9', fontSize:15 }}>{d.label}</h3>
+                  <p style={{ fontSize:12, color:'#94A3B8', marginBottom:12, flex:1 }}>{d.desc}</p>
+                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:6, marginBottom:10 }}>
+                    {[['Rows', d.rows, '#f5f5f5'], ['Size', d.size, '#60a5fa'], ['Price', d.price, '#fbbf24']].map(([l,v,c]) => (
+                      <div key={l as string} style={{ background:'rgba(255,255,255,0.02)', border:'1px solid rgba(255,255,255,0.04)', borderRadius:8, padding:'6px 4px', textAlign:'center' }}>
+                        <div style={{ fontSize:11, fontWeight:700, color:c as string }}>{v as string}</div>
+                        <div style={{ fontSize:9, color:'#64748B', marginTop:2, textTransform:'uppercase' }}>{l as string}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ display:'flex', justifyContent:'space-between', fontSize:12 }}>
+                    <span style={{ color:'#34d399', fontWeight:600 }}>🌐 Publicly Listed</span>
+                    <span style={{ color:'#94A3B8' }}>⬇️ {d.downloads} downloads</span>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </>
       )}
     </motion.div>
   );

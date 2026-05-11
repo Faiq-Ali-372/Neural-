@@ -14,6 +14,7 @@ import DatasetsPage from '@/components/pages/DatasetsPage';
 import SettingsPage from '@/components/pages/SettingsPage';
 import AdminPage from '@/components/pages/AdminPage';
 import LibraryPage from '@/components/pages/LibraryPage';
+import ComputePage from '@/components/pages/ComputePage';
 import PaymentModal from '@/components/wallet/PaymentModal';
 import TransactionToast, { TxStatus } from '@/components/ui/TransactionToast';
 
@@ -34,6 +35,11 @@ export default function App() {
   const [lastModel, setLastModel] = useState<{ name: string; accuracy: number; cost: string; cat: string } | null>(null);
   const [purchasedModels, setPurchasedModels] = useState<import('@/lib/constants').Model[]>([]);
   const [purchasedDatasets, setPurchasedDatasets] = useState<any[]>([]);
+  const [purchasedGpus, setPurchasedGpus] = useState<any[]>([]);
+  const [pendingDatasets, setPendingDatasets] = useState<any[]>([]);
+  const [pendingGpus, setPendingGpus] = useState<any[]>([]);
+  const [approvedDatasets, setApprovedDatasets] = useState<any[]>([]);
+  const [approvedGpus, setApprovedGpus] = useState<any[]>([]);
   const [payment, setPayment]    = useState<PendingPayment | null>(null);
   const [txToast, setTxToast]    = useState<{ status: TxStatus; hash?: string }>({ status: 'idle' });
 
@@ -169,13 +175,48 @@ export default function App() {
               })} />}
                     {page === 'dashboard' && <DashboardPage addLog={addLog} onNavigate={setPage} />}
                     {page === 'deploy'    && <DeployPage {...pageProps} />}
-                    {page === 'datasets'  && <DatasetsPage {...pageProps} onPurchaseComplete={(d: any) => setPurchasedDatasets(prev => {
-                      if (prev.find(p => p.name === d.name)) return prev;
-                      return [...prev, d];
-                    })} />}
+                    {page === 'datasets'  && <DatasetsPage {...pageProps}
+                      pendingDatasets={pendingDatasets}
+                      approvedDatasets={approvedDatasets}
+                      onAddPending={(d: any) => setPendingDatasets(prev => [d, ...prev])}
+                      onRemovePending={(name: string) => setPendingDatasets(prev => prev.filter(d => d.name !== name))}
+                      onPurchaseComplete={(d: any) => setPurchasedDatasets(prev => {
+                        if (prev.find(p => p.name === d.name)) return prev;
+                        return [...prev, d];
+                      })} />}
+                    {page === 'compute'   && <ComputePage {...pageProps}
+                      pendingGpus={pendingGpus}
+                      approvedGpus={approvedGpus}
+                      onAddPending={(g: any) => setPendingGpus(prev => [g, ...prev])}
+                      onRemovePending={(id: string) => setPendingGpus(prev => prev.filter(g => g.id !== id))}
+                      onPurchaseComplete={(g: any) => setPurchasedGpus(prev => {
+                        if (prev.find(p => p.id === g.id)) return prev;
+                        return [...prev, g];
+                      })} />}
                     {page === 'settings'  && <SettingsPage {...pageProps} />}
-                    {page === 'admin'     && <AdminPage addLog={addLog} onNavigate={setPage} />}
-                    {page === 'library'   && <LibraryPage purchasedModels={purchasedModels} purchasedDatasets={purchasedDatasets} onNavigate={setPage} setTxToast={triggerTxToast} />}
+                    {page === 'admin'     && <AdminPage addLog={addLog} onNavigate={setPage}
+                      pendingDatasets={pendingDatasets}
+                      pendingGpus={pendingGpus}
+                      onApproveDataset={(name) => {
+                        const ds = pendingDatasets.find(d => d.name === name);
+                        if (ds) {
+                          setPendingDatasets(prev => prev.filter(d => d.name !== name));
+                          setApprovedDatasets(prev => [{ ...ds, status: 'live' }, ...prev]);
+                          addLog(`[ADMIN] Dataset "${ds.label}" is now live on marketplace`, 'success');
+                        }
+                      }}
+                      onRejectDataset={(name) => setPendingDatasets(prev => prev.filter(d => d.name !== name))}
+                      onApproveGpu={(id) => {
+                        const gpu = pendingGpus.find(g => g.id === id);
+                        if (gpu) {
+                          setPendingGpus(prev => prev.filter(g => g.id !== id));
+                          setApprovedGpus(prev => [{ ...gpu, status: 'available' }, ...prev]);
+                          addLog(`[ADMIN] GPU "${gpu.name}" is now live on marketplace`, 'success');
+                        }
+                      }}
+                      onRejectGpu={(id) => setPendingGpus(prev => prev.filter(g => g.id !== id))}
+                    />}
+                    {page === 'library'   && <LibraryPage purchasedModels={purchasedModels} purchasedDatasets={purchasedDatasets} purchasedGpus={purchasedGpus} onNavigate={setPage} setTxToast={triggerTxToast} />}
                   </motion.div>
                 </AnimatePresence>
               </main>

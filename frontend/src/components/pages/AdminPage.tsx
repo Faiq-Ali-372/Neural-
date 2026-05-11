@@ -8,6 +8,12 @@ import ActivityTicker from '@/components/ui/ActivityTicker';
 interface Props {
   addLog: (m: string, t?: LogLine['type']) => void;
   onNavigate: (p: string) => void;
+  pendingDatasets?: any[];
+  pendingGpus?: any[];
+  onApproveDataset?: (name: string) => void;
+  onRejectDataset?: (name: string) => void;
+  onApproveGpu?: (id: string) => void;
+  onRejectGpu?: (id: string) => void;
 }
 
 interface PendingModel {
@@ -57,8 +63,8 @@ function StatPill({ label, val, color }: { label: string; val: string | number; 
   );
 }
 
-export default function AdminPage({ addLog, onNavigate }: Props) {
-  const [tab, setTab]           = useState<'models' | 'stats' | 'logs'>('models');
+export default function AdminPage({ addLog, onNavigate, pendingDatasets = [], pendingGpus = [], onApproveDataset, onRejectDataset, onApproveGpu, onRejectGpu }: Props) {
+  const [tab, setTab] = useState<'submissions' | 'models' | 'stats' | 'logs'>('submissions');
   const [models, setModels]     = useState<PendingModel[]>([]);
   const [loading, setLoading]   = useState(true);
   const [approving, setApproving] = useState<string | null>(null);
@@ -168,8 +174,8 @@ export default function AdminPage({ addLog, onNavigate }: Props) {
 
       {/* Tabs */}
       <div style={{ display: 'flex', gap: 2, marginBottom: 18, background: '#0C1220', borderRadius: 10, padding: 4, width: 'fit-content', border: '1px solid rgba(255,255,255,0.06)' }}>
-        {([['models', '🧩 Models'], ['stats', '📊 Stats'], ['logs', '📋 Logs']] as const).map(([t, label]) => (
-          <button key={t} onClick={() => setTab(t)}
+        {([['submissions', `📥 Submissions (${pendingDatasets.length + pendingGpus.length + pendingCount})`], ['models', '🧩 My Models'], ['stats', '📊 Stats'], ['logs', '📋 Logs']] as const).map(([t, label]) => (
+          <button key={t} onClick={() => setTab(t as any)}
             style={{
               padding: '6px 14px', borderRadius: 7, border: 'none', cursor: 'pointer',
               background: tab === t ? 'rgba(99,102,241,0.2)' : 'transparent',
@@ -179,6 +185,102 @@ export default function AdminPage({ addLog, onNavigate }: Props) {
           </button>
         ))}
       </div>
+
+      {/* ── SUBMISSIONS TAB ── */}
+      {(tab as string) === 'submissions' && (
+        <div>
+          {pendingDatasets.length === 0 && pendingGpus.length === 0 && pendingCount === 0 ? (
+            <div style={{ textAlign:'center', padding:'60px 0', border:'1px dashed rgba(255,255,255,0.08)', borderRadius:14 }}>
+              <div style={{ fontSize:40, marginBottom:12 }}>✅</div>
+              <div style={{ fontSize:16, fontWeight:600, color:'#F1F5F9', marginBottom:6 }}>No Pending Submissions</div>
+              <div style={{ fontSize:13, color:'#64748B' }}>All submissions have been reviewed. Upload a model, dataset, or GPU to see it here.</div>
+            </div>
+          ) : (
+            <>
+              {/* Pending Datasets */}
+              {pendingDatasets.length > 0 && (
+                <div style={{ marginBottom:24 }}>
+                  <div style={{ fontSize:13, fontWeight:700, color:'#fbbf24', marginBottom:12, display:'flex', alignItems:'center', gap:6 }}>
+                    🗃️ Pending Datasets ({pendingDatasets.length})
+                  </div>
+                  {pendingDatasets.map((d, i) => (
+                    <motion.div key={i} initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }}
+                      style={{ background:'rgba(251,191,36,0.04)', border:'1px solid rgba(251,191,36,0.15)', borderRadius:12, padding:16, marginBottom:10, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                      <div>
+                        <div style={{ fontWeight:700, color:'#F1F5F9', marginBottom:4 }}>{d.label}</div>
+                        <div style={{ fontSize:12, color:'#94A3B8' }}>{d.cat} · {d.size} · {d.price}</div>
+                        <div style={{ fontSize:11, color:'#64748B', marginTop:2 }}>{d.desc}</div>
+                      </div>
+                      <div style={{ display:'flex', gap:8, flexShrink:0 }}>
+                        <motion.button whileHover={{ scale:1.05 }} onClick={() => { onApproveDataset?.(d.name); addLog(`[ADMIN] ✅ Dataset approved: "${d.label}"`, 'success'); }}
+                          style={{ padding:'7px 16px', background:'linear-gradient(135deg,#34d399,#059669)', border:'none', borderRadius:8, color:'#060910', fontWeight:700, fontSize:12, cursor:'pointer' }}>
+                          ✅ Approve
+                        </motion.button>
+                        <motion.button whileHover={{ scale:1.05 }} onClick={() => { onRejectDataset?.(d.name); addLog(`[ADMIN] ❌ Dataset rejected: "${d.label}"`, 'warn'); }}
+                          style={{ padding:'7px 16px', background:'rgba(248,113,113,0.1)', border:'1px solid rgba(248,113,113,0.3)', borderRadius:8, color:'#f87171', fontWeight:700, fontSize:12, cursor:'pointer' }}>
+                          ❌ Reject
+                        </motion.button>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+
+              {/* Pending GPUs */}
+              {pendingGpus.length > 0 && (
+                <div style={{ marginBottom:24 }}>
+                  <div style={{ fontSize:13, fontWeight:700, color:'#818cf8', marginBottom:12, display:'flex', alignItems:'center', gap:6 }}>
+                    🖥️ Pending GPUs ({pendingGpus.length})
+                  </div>
+                  {pendingGpus.map((g, i) => (
+                    <motion.div key={i} initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }}
+                      style={{ background:'rgba(99,102,241,0.04)', border:'1px solid rgba(99,102,241,0.15)', borderRadius:12, padding:16, marginBottom:10, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                      <div>
+                        <div style={{ fontWeight:700, color:'#F1F5F9', marginBottom:4 }}>{g.name}</div>
+                        <div style={{ fontSize:12, color:'#94A3B8' }}>{g.vram} · {g.tflops}T FLOPS · {g.pricePerHr} SOL/hr · {g.location}</div>
+                      </div>
+                      <div style={{ display:'flex', gap:8, flexShrink:0 }}>
+                        <motion.button whileHover={{ scale:1.05 }} onClick={() => { onApproveGpu?.(g.id); addLog(`[ADMIN] ✅ GPU approved: "${g.name}"`, 'success'); }}
+                          style={{ padding:'7px 16px', background:'linear-gradient(135deg,#34d399,#059669)', border:'none', borderRadius:8, color:'#060910', fontWeight:700, fontSize:12, cursor:'pointer' }}>
+                          ✅ Approve
+                        </motion.button>
+                        <motion.button whileHover={{ scale:1.05 }} onClick={() => { onRejectGpu?.(g.id); addLog(`[ADMIN] ❌ GPU rejected: "${g.name}"`, 'warn'); }}
+                          style={{ padding:'7px 16px', background:'rgba(248,113,113,0.1)', border:'1px solid rgba(248,113,113,0.3)', borderRadius:8, color:'#f87171', fontWeight:700, fontSize:12, cursor:'pointer' }}>
+                          ❌ Reject
+                        </motion.button>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+
+              {/* Pending Models from backend */}
+              {pendingCount > 0 && (
+                <div style={{ marginBottom:24 }}>
+                  <div style={{ fontSize:13, fontWeight:700, color:'#34d399', marginBottom:12 }}>🧩 Pending Models ({pendingCount})</div>
+                  <AnimatePresence>
+                    {models.filter(m => !m.is_approved).map((m, i) => (
+                      <motion.div key={m.model_key} initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }}
+                        style={{ background:'rgba(52,211,153,0.04)', border:'1px solid rgba(52,211,153,0.15)', borderRadius:12, padding:16, marginBottom:10, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                        <div>
+                          <div style={{ fontWeight:700, color:'#F1F5F9', marginBottom:4 }}>{m.name}</div>
+                          <div style={{ fontSize:12, color:'#94A3B8' }}>{m.category} · {m.price_sol} SOL · Acc: {m.accuracy}%</div>
+                          <div style={{ fontSize:11, color:'#64748B', marginTop:2 }}>{m.description}</div>
+                        </div>
+                        <motion.button whileHover={{ scale:1.05 }} onClick={() => handleApprove(m.model_key, m.name)}
+                          disabled={approving === m.model_key}
+                          style={{ padding:'7px 16px', background:'linear-gradient(135deg,#34d399,#059669)', border:'none', borderRadius:8, color:'#060910', fontWeight:700, fontSize:12, cursor:'pointer', opacity: approving === m.model_key ? 0.7 : 1 }}>
+                          {approving === m.model_key ? '…' : '✅ Approve'}
+                        </motion.button>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
 
       {/* ── MODELS TAB ── */}
       {tab === 'models' && (

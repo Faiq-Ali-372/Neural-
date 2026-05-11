@@ -55,6 +55,7 @@ export const NAV_ITEMS = [
     group: 'Create', items: [
       { key: 'deploy', label: 'Deploy Model', icon: 'upload' },
       { key: 'datasets', label: 'Datasets', icon: 'data' },
+      { key: 'compute', label: 'GPU Compute', icon: 'cpu', badge: 'New' as const },
     ]
   },
   {

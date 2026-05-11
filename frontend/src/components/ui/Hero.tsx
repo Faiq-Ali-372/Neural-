@@ -346,7 +346,7 @@ export default function HeroSection({ onLaunchAgent, onExploreModels }: HeroSect
               textShadow: '0 2px 10px rgba(167,139,250,0.8)'
             }}
           >
-            Deploy AI Models
+            AI Model Marketplace
           </motion.div>
 
           {/* GPUs Badge */}
@@ -371,7 +371,7 @@ export default function HeroSection({ onLaunchAgent, onExploreModels }: HeroSect
               textShadow: '0 2px 10px rgba(56,189,248,0.8)'
             }}
           >
-            Rent DePIN GPUs
+            DePIN GPU Rentals
           </motion.div>
 
           {/* Datasets Badge */}
@@ -396,12 +396,12 @@ export default function HeroSection({ onLaunchAgent, onExploreModels }: HeroSect
               textShadow: '0 2px 10px rgba(52,211,153,0.8)'
             }}
           >
-            Trade Premium Datasets
+            Web3 Dataset Exchange
           </motion.div>
         </div>
 
         <p style={{ color: '#94a3b8', fontSize: 17, fontWeight: 500, margin: 0, letterSpacing: '0.01em' }}>
-          Everything settled on-chain in milliseconds.
+          The decentralized marketplace. Everything settled on-chain in milliseconds.
         </p>
       </motion.div>
 

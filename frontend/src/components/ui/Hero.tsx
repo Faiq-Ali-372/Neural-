@@ -323,81 +323,37 @@ export default function HeroSection({ onLaunchAgent, onExploreModels }: HeroSect
           maxWidth: 700,
         }}
       >
-        <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
-          {/* Models Badge */}
-          <motion.div
-            whileHover={{ scale: 1.05, y: -2, boxShadow: '0 0 30px rgba(167, 139, 250, 0.5)' }}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            style={{
-              padding: '10px 24px',
-              borderRadius: 100,
-              background: 'linear-gradient(180deg, rgba(167,139,250,0.15) 0%, rgba(139,92,246,0.02) 100%)',
-              border: '1px solid rgba(167,139,250,0.4)',
-              boxShadow: '0 0 20px rgba(167,139,250,0.15), inset 0 1px 0 rgba(255,255,255,0.15)',
-              color: '#f8fafc',
-              fontWeight: 700,
-              fontSize: 13,
-              letterSpacing: '0.1em',
-              textTransform: 'uppercase',
-              cursor: 'default',
-              backdropFilter: 'blur(10px)',
-              textShadow: '0 2px 10px rgba(167,139,250,0.8)'
-            }}
-          >
-            AI Model Marketplace
-          </motion.div>
-
-          {/* GPUs Badge */}
-          <motion.div
-            whileHover={{ scale: 1.05, y: -2, boxShadow: '0 0 30px rgba(56, 189, 248, 0.5)' }}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            style={{
-              padding: '10px 24px',
-              borderRadius: 100,
-              background: 'linear-gradient(180deg, rgba(56,189,248,0.15) 0%, rgba(14,165,233,0.02) 100%)',
-              border: '1px solid rgba(56,189,248,0.4)',
-              boxShadow: '0 0 20px rgba(56,189,248,0.15), inset 0 1px 0 rgba(255,255,255,0.15)',
-              color: '#f8fafc',
-              fontWeight: 700,
-              fontSize: 13,
-              letterSpacing: '0.1em',
-              textTransform: 'uppercase',
-              cursor: 'default',
-              backdropFilter: 'blur(10px)',
-              textShadow: '0 2px 10px rgba(56,189,248,0.8)'
-            }}
-          >
-            DePIN GPU Rentals
-          </motion.div>
-
-          {/* Datasets Badge */}
-          <motion.div
-            whileHover={{ scale: 1.05, y: -2, boxShadow: '0 0 30px rgba(52, 211, 153, 0.5)' }}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            style={{
-              padding: '10px 24px',
-              borderRadius: 100,
-              background: 'linear-gradient(180deg, rgba(52,211,153,0.15) 0%, rgba(16,185,129,0.02) 100%)',
-              border: '1px solid rgba(52,211,153,0.4)',
-              boxShadow: '0 0 20px rgba(52,211,153,0.15), inset 0 1px 0 rgba(255,255,255,0.15)',
-              color: '#f8fafc',
-              fontWeight: 700,
-              fontSize: 13,
-              letterSpacing: '0.1em',
-              textTransform: 'uppercase',
-              cursor: 'default',
-              backdropFilter: 'blur(10px)',
-              textShadow: '0 2px 10px rgba(52,211,153,0.8)'
-            }}
-          >
-            Web3 Dataset Exchange
-          </motion.div>
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+          {[
+            { label: 'AI Model Marketplace', color: '167,139,250', glow: 'rgba(167,139,250,0.5)' },
+            { label: 'DePIN GPU Rentals',    color: '56,189,248',  glow: 'rgba(56,189,248,0.5)'  },
+            { label: 'Dataset Exchange',     color: '52,211,153',  glow: 'rgba(52,211,153,0.5)'  },
+          ].map(({ label, color, glow }) => (
+            <motion.div
+              key={label}
+              whileHover={{ scale: 1.04, y: -1, boxShadow: `0 0 18px ${glow}` }}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              style={{
+                padding: '5px 14px',
+                borderRadius: 100,
+                background: `linear-gradient(180deg, rgba(${color},0.1) 0%, rgba(${color},0.02) 100%)`,
+                border: `1px solid rgba(${color},0.35)`,
+                boxShadow: `0 0 10px rgba(${color},0.1)`,
+                color: '#e2e8f0',
+                fontWeight: 600,
+                fontSize: 11,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase' as const,
+                cursor: 'default',
+                backdropFilter: 'blur(8px)',
+                textShadow: `0 1px 8px rgba(${color},0.6)`,
+                whiteSpace: 'nowrap' as const,
+              }}
+            >
+              {label}
+            </motion.div>
+          ))}
         </div>
 
         <p style={{ color: '#94a3b8', fontSize: 16, fontWeight: 500, margin: 0, letterSpacing: '0.01em', maxWidth: 560 }}>
@@ -431,30 +387,37 @@ export default function HeroSection({ onLaunchAgent, onExploreModels }: HeroSect
             transition: 'box-shadow 0.3s',
           }}
         >
-          Launch Marketplace
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M6 3L11 8L6 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          Deploy AI Models
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </motion.button>
 
         <motion.button
           onClick={onExploreModels}
-          whileHover={{ scale: 1.03, borderColor: 'rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.06)' }}
+          whileHover={{ scale: 1.03, borderColor: 'rgba(96,165,250,0.5)', background: 'rgba(56,189,248,0.07)', color: '#93c5fd' }}
           whileTap={{ scale: 0.97 }}
           style={{
-            padding: '12px 32px',
+            padding: '12px 28px',
             fontSize: 14,
-            fontWeight: 500,
-            color: '#fff',
-            background: 'rgba(255,255,255,0.08)',
-            border: '1px solid rgba(255,255,255,0.2)',
+            fontWeight: 600,
+            color: '#94a3b8',
+            background: 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(255,255,255,0.12)',
             borderRadius: 14,
             cursor: 'pointer',
-            transition: 'all 0.3s',
+            transition: 'all 0.25s',
             backdropFilter: 'blur(12px)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
           }}
         >
-          Explore Models
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+            <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.8"/>
+            <path d="M16.5 16.5L21 21" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+          </svg>
+          Browse Compute Power
         </motion.button>
       </motion.div>
 

@@ -400,8 +400,9 @@ export default function HeroSection({ onLaunchAgent, onExploreModels }: HeroSect
           </motion.div>
         </div>
 
-        <p style={{ color: '#94a3b8', fontSize: 17, fontWeight: 500, margin: 0, letterSpacing: '0.01em' }}>
-          The decentralized marketplace. Everything settled on-chain in milliseconds.
+        <p style={{ color: '#94a3b8', fontSize: 16, fontWeight: 500, margin: 0, letterSpacing: '0.01em', maxWidth: 560 }}>
+          A decentralized AI marketplace for models, compute & datasets —{' '}
+          <span style={{ color: '#cbd5e1' }}>settled on-chain in milliseconds.</span>
         </p>
       </motion.div>
 
@@ -430,7 +431,7 @@ export default function HeroSection({ onLaunchAgent, onExploreModels }: HeroSect
             transition: 'box-shadow 0.3s',
           }}
         >
-          Enter Marketplace
+          Launch Marketplace
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
             <path d="M6 3L11 8L6 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
@@ -455,6 +456,30 @@ export default function HeroSection({ onLaunchAgent, onExploreModels }: HeroSect
         >
           Explore Models
         </motion.button>
+      </motion.div>
+
+      {/* Trust Badges */}
+      <motion.div
+        variants={item}
+        style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center', marginTop: 24, position: 'relative', zIndex: 1 }}
+      >
+        {[
+          { dot: '#34d399', label: 'Live on Solana Devnet' },
+          { dot: '#60a5fa', label: 'Real-Time On-Chain Settlement' },
+          { dot: '#a78bfa', label: 'Non-Custodial · Trustless' },
+        ].map(({ dot, label }) => (
+          <div key={label} style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            padding: '5px 14px', borderRadius: 100,
+            background: 'rgba(255,255,255,0.02)',
+            border: '1px solid rgba(255,255,255,0.07)',
+            fontSize: 11.5, fontWeight: 500, color: '#64748b',
+            letterSpacing: '0.02em',
+          }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: dot, boxShadow: `0 0 6px ${dot}`, display: 'inline-block', flexShrink: 0 }} />
+            {label}
+          </div>
+        ))}
       </motion.div>
 
       {/* Scroll Indicator */}

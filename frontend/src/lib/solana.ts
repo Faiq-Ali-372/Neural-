@@ -70,14 +70,18 @@ export async function fetchSolPrice(): Promise<string> {
 
 /**
  * Send SOL to the platform wallet via Phantom.
- * Returns the transaction signature string.
- * Falls back to a demo signature if @solana/web3.js is unavailable.
+ * Returns the confirmed transaction signature string.
+ * THROWS on any failure — no demo fallbacks.
  */
 export async function sendSolPayment(
   amountSol: number,
   walletPublicKey: string,
   signTransaction: (tx: unknown) => Promise<unknown>
 ): Promise<string> {
+  if (!walletPublicKey || walletPublicKey === 'demo') {
+    throw new Error('Wallet not connected. Please connect Phantom first.');
+  }
+
   const lamports = Math.round(amountSol * 1e9);
 
   // Get latest blockhash
@@ -87,41 +91,45 @@ export async function sendSolPayment(
     body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'getLatestBlockhash', params: [] }),
   });
   const bhData = await bhRes.json();
+  if (!bhData.result?.value?.blockhash) {
+    throw new Error('Failed to fetch blockhash from Solana RPC.');
+  }
   const blockhash = bhData.result.value.blockhash;
 
   // Dynamically import @solana/web3.js to avoid SSR issues
-  try {
-    const { Connection, Transaction, SystemProgram, PublicKey } = await import('@solana/web3.js');
-    const conn = new Connection(SOLANA_RPC, 'confirmed');
-    const tx = new Transaction().add(
-      SystemProgram.transfer({
-        fromPubkey: new PublicKey(walletPublicKey),
-        toPubkey: new PublicKey(PLATFORM_WALLET),
-        lamports,
-      })
-    );
-    tx.recentBlockhash = blockhash;
-    tx.feePayer = new PublicKey(walletPublicKey);
+  const { Connection, Transaction, SystemProgram, PublicKey } = await import('@solana/web3.js');
+  const conn = new Connection(SOLANA_RPC, 'confirmed');
 
-    const signed = await signTransaction(tx);
-    const raw = (signed as { serialize: () => Uint8Array }).serialize();
-    const srRes = await fetch(SOLANA_RPC, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        jsonrpc: '2.0',
-        id: 1,
-        method: 'sendTransaction',
-        params: [Buffer.from(raw).toString('base64'), { encoding: 'base64' }],
-      }),
-    });
-    const srData = await srRes.json();
+  const tx = new Transaction().add(
+    SystemProgram.transfer({
+      fromPubkey: new PublicKey(walletPublicKey),
+      toPubkey: new PublicKey(PLATFORM_WALLET),
+      lamports,
+    })
+  );
+  tx.recentBlockhash = blockhash;
+  tx.feePayer = new PublicKey(walletPublicKey);
 
-    // Confirm transaction
-    await conn.confirmTransaction(srData.result, 'confirmed');
-    return srData.result as string;
-  } catch {
-    // Fallback for demo/devnet when wallet adapter is not fully available
-    return `demo_sig_${Date.now()}`;
+  // This will throw if user rejects in Phantom
+  const signed = await signTransaction(tx);
+  const raw = (signed as { serialize: () => Uint8Array }).serialize();
+
+  const srRes = await fetch(SOLANA_RPC, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'sendTransaction',
+      params: [Buffer.from(raw).toString('base64'), { encoding: 'base64' }],
+    }),
+  });
+  const srData = await srRes.json();
+  if (srData.error) {
+    throw new Error(srData.error.message ?? 'Transaction rejected by network.');
   }
+
+  // Confirm on-chain
+  await conn.confirmTransaction(srData.result, 'confirmed');
+  return srData.result as string;
 }

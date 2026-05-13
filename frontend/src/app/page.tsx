@@ -1,6 +1,8 @@
 'use client';
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useWallet } from '@solana/wallet-adapter-react';
+import { useWalletModal } from '@solana/wallet-adapter-react-ui';
 import Sidebar from '@/components/ui/Sidebar';
 import Topbar from '@/components/ui/Topbar';
 import ParticleField from '@/components/ui/ParticleField';
@@ -60,6 +62,12 @@ export default function App() {
 
   const isLanding = page === 'home';
   const pageProps = { addLog, requestPayment, setLastModel, onNavigate: setPage, setTxToast: triggerTxToast };
+
+  // ── Pages that require a connected wallet ──────────────────────────────────
+  const PROTECTED_PAGES = ['models','datasets','compute','library','deploy','dashboard','agent','settings','admin'];
+  const { connected } = useWallet();
+  const { setVisible } = useWalletModal();
+  const isProtected = PROTECTED_PAGES.includes(page) && !connected;
 
   return (
     <div style={{ height: '100vh', position: 'relative', overflow: 'hidden' }}>
@@ -168,6 +176,92 @@ export default function App() {
                     exit={{ opacity: 0, y: -8 }}
                     transition={{ duration: 0.25 }}
                   >
+                    {/* ── Wallet Guard ── show for protected pages when disconnected ── */}
+                    {isProtected && (
+                      <motion.div
+                        key="wallet-gate"
+                        initial={{ opacity: 0, scale: 0.97 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0 }}
+                        style={{
+                          display: 'flex', flexDirection: 'column', alignItems: 'center',
+                          justifyContent: 'center', minHeight: '70vh', textAlign: 'center', gap: 0,
+                        }}
+                      >
+                        {/* Glow */}
+                        <div style={{
+                          position: 'absolute', width: 340, height: 340, borderRadius: '50%',
+                          background: 'radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%)',
+                          filter: 'blur(40px)', pointerEvents: 'none',
+                        }} />
+
+                        {/* Lock icon */}
+                        <motion.div
+                          animate={{ y: [0, -6, 0] }}
+                          transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+                          style={{
+                            width: 80, height: 80, borderRadius: 22, marginBottom: 28,
+                            background: 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.08))',
+                            border: '1px solid rgba(99,102,241,0.25)',
+                            boxShadow: '0 0 40px rgba(99,102,241,0.15)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          }}
+                        >
+                          <svg width="36" height="36" viewBox="0 0 24 24" fill="none">
+                            <rect x="3" y="11" width="18" height="11" rx="3" stroke="#818cf8" strokeWidth="1.5"/>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="#818cf8" strokeWidth="1.5" strokeLinecap="round"/>
+                            <circle cx="12" cy="16" r="1.5" fill="#818cf8"/>
+                          </svg>
+                        </motion.div>
+
+                        <h2 style={{
+                          fontSize: 28, fontWeight: 700, color: '#f1f5f9',
+                          letterSpacing: '-0.03em', marginBottom: 10,
+                        }}>
+                          Wallet Required
+                        </h2>
+                        <p style={{ fontSize: 15, color: '#64748b', maxWidth: 380, lineHeight: 1.6, marginBottom: 32 }}>
+                          Connect your <span style={{ color: '#a78bfa', fontWeight: 600 }}>Phantom wallet</span> to access
+                          the marketplace, make purchases, and manage your assets on-chain.
+                        </p>
+
+                        {/* Connect button */}
+                        <motion.button
+                          whileHover={{ scale: 1.04, boxShadow: '0 0 40px rgba(99,102,241,0.4)' }}
+                          whileTap={{ scale: 0.97 }}
+                          onClick={() => setVisible(true)}
+                          style={{
+                            padding: '14px 36px', fontSize: 15, fontWeight: 700,
+                            background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                            border: 'none', borderRadius: 14, color: '#fff',
+                            cursor: 'pointer',
+                            boxShadow: '0 0 30px rgba(99,102,241,0.25), 0 0 60px rgba(99,102,241,0.1)',
+                            display: 'flex', alignItems: 'center', gap: 10,
+                          }}
+                        >
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                            <path d="M20 12V8a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v8a4 4 0 0 0 4 4h10a4 4 0 0 0 4-4v-4" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
+                            <path d="M20 12h-6a2 2 0 1 0 0 4h6" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
+                          </svg>
+                          Connect Phantom
+                        </motion.button>
+
+                        {/* Info chips */}
+                        <div style={{ display: 'flex', gap: 10, marginTop: 28, flexWrap: 'wrap', justifyContent: 'center' }}>
+                          {['Solana Devnet', 'Non-custodial', 'Trustless Payments'].map(label => (
+                            <span key={label} style={{
+                              padding: '5px 14px', borderRadius: 100, fontSize: 12, fontWeight: 500,
+                              background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)',
+                              color: '#64748b',
+                            }}>{label}</span>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {/* ── Page content (only when wallet is connected or page is unprotected) ── */}
+                    {!isProtected && (
+                      <>
                     {page === 'agent'     && <AgentPage {...pageProps} />}
                     {page === 'models'    && <ModelsPage {...pageProps} searchQuery={searchQuery} onPurchaseComplete={(m) => setPurchasedModels(prev => {
                 if (prev.find(p => p.key === m.key)) return prev;
@@ -217,6 +311,8 @@ export default function App() {
                       onRejectGpu={(id) => setPendingGpus(prev => prev.filter(g => g.id !== id))}
                     />}
                     {page === 'library'   && <LibraryPage purchasedModels={purchasedModels} purchasedDatasets={purchasedDatasets} purchasedGpus={purchasedGpus} onNavigate={setPage} setTxToast={triggerTxToast} />}
+                      </>
+                    )}
                   </motion.div>
                 </AnimatePresence>
               </main>

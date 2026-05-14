@@ -94,7 +94,7 @@ export default function ThreeParticleBackground() {
     <div className="absolute inset-0 z-0 pointer-events-none" style={{ opacity: 0.55 }}>
       {/* frameloop="demand" stops continuous rendering; we handle it via useFrame */}
       <Canvas camera={{ position: [0, 0, 5], fov: 75 }}>
-        <Particles count={200} />
+        <Particles count={350} />
       </Canvas>
     </div>
   );

@@ -43,9 +43,9 @@ export default function ParticleField() {
     window.addEventListener('click',      handleClick,     { passive: true });
     window.addEventListener('mouseleave', handleMouseLeave, { passive: true });
 
-    // ── Reduced particle count: max 60 (was 90) ─────────────────────────────
-    const PARTICLE_COUNT = Math.min(60, Math.floor((window.innerWidth * window.innerHeight) / 20000));
-    const MAX_DIST  = 150;
+    // ── Restore original particle count: max 90 ─────────────────────────────
+    const PARTICLE_COUNT = Math.min(90, Math.floor((window.innerWidth * window.innerHeight) / 15000));
+    const MAX_DIST  = 160;
     const MAX_DIST2 = MAX_DIST * MAX_DIST; // compare squared to avoid sqrt when possible
     const MOUSE_RADIUS = 220;
 

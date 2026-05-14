@@ -14,33 +14,21 @@ import { SOLANA_RPC, PLATFORM_WALLET } from './constants';
 /** Shorten a wallet address: first 4 + last 4 chars */
 export function truncAddr(address: string): string {
   if (!address) return '';
-  return `${address.slice(0, 4)}\u2026${address.slice(-4)}`;
-}
-
-/**
- * Wraps Solana RPC fetch with a 5s AbortController timeout.
- * Prevents balance/blockhash requests from hanging on a throttled public RPC.
- */
-async function fetchRPC(body: object, timeoutMs = 5000): Promise<Response> {
-  const controller = new AbortController();
-  const tid = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    return await fetch(SOLANA_RPC, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-      signal: controller.signal,
-    });
-  } finally {
-    clearTimeout(tid);
-  }
+  return `${address.slice(0, 4)}…${address.slice(-4)}`;
 }
 
 /** Fetch SOL balance (in SOL, not lamports) for a given address */
 export async function fetchBalance(walletAddress: string): Promise<string> {
   try {
-    const res = await fetchRPC({
-      jsonrpc: '2.0', id: 1, method: 'getBalance', params: [walletAddress],
+    const res = await fetch(SOLANA_RPC, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'getBalance',
+        params: [walletAddress],
+      }),
     });
     const data = await res.json();
     if (data.result?.value !== undefined) {
@@ -55,11 +43,15 @@ export async function fetchBalance(walletAddress: string): Promise<string> {
 /** Fetch current Solana devnet block height */
 export async function fetchBlockHeight(): Promise<string> {
   try {
-    const res = await fetchRPC({ jsonrpc: '2.0', id: 1, method: 'getBlockHeight', params: [] });
+    const res = await fetch(SOLANA_RPC, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'getBlockHeight', params: [] }),
+    });
     const data = await res.json();
-    return data.result ? data.result.toLocaleString() : '\u2014';
+    return data.result ? data.result.toLocaleString() : '—';
   } catch {
-    return '\u2014';
+    return '—';
   }
 }
 

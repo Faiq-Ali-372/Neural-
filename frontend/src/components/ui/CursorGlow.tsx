@@ -2,11 +2,13 @@
 import { useEffect, useRef } from 'react';
 
 /**
- * CursorGlow - Optimized
- * Uses transform-based animation instead of full-screen repaints for better performance.
+ * CursorGlow — Fixed RAF memory leak.
+ * Stores the current animation frame ID in a ref so cancelAnimationFrame
+ * always cancels the *latest* scheduled frame, not just the first one.
  */
 export default function CursorGlow() {
   const glowRef = useRef<HTMLDivElement>(null);
+  const rafRef  = useRef<number>(0);
 
   useEffect(() => {
     const el = glowRef.current;
@@ -21,21 +23,19 @@ export default function CursorGlow() {
     };
 
     const animate = () => {
-      // Smooth interpolation
       x += (targetX - x) * 0.1;
       y += (targetY - y) * 0.1;
-      
-      // Use translate3d for GPU acceleration
       el.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-      requestAnimationFrame(animate);
+      // Store the latest frame ID so cleanup always cancels the right one
+      rafRef.current = requestAnimationFrame(animate);
     };
 
-    window.addEventListener('mousemove', handleMouse);
-    const raf = requestAnimationFrame(animate);
+    window.addEventListener('mousemove', handleMouse, { passive: true });
+    rafRef.current = requestAnimationFrame(animate);
 
     return () => {
       window.removeEventListener('mousemove', handleMouse);
-      cancelAnimationFrame(raf);
+      cancelAnimationFrame(rafRef.current); // always cancels the latest frame
     };
   }, []);
 
@@ -44,7 +44,7 @@ export default function CursorGlow() {
       ref={glowRef}
       style={{
         position: 'fixed',
-        top: -400, // Offset for the 800px size
+        top: -400,
         left: -400,
         width: 800,
         height: 800,

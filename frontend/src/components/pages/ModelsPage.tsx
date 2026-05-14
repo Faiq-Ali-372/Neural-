@@ -56,25 +56,42 @@ export default function ModelsPage({ addLog, requestPayment, setLastModel, onNav
   useEffect(() => { setSearch(searchQuery); }, [searchQuery]);
 
   useEffect(() => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 3000); // 3s max — never hang on dead localhost
+
     const load = async () => {
-      try {
-        const backendModels = await fetchModels().then(bms => bms.map(backendToLocal)).catch(() => [...MODELS_DATA]);
-        const creatorRes = await fetch('http://localhost:8000/api/deploy/marketplace');
-        let creatorModels: Model[] = [];
-        if (creatorRes.ok) {
-          const creatorData = await creatorRes.json();
-          const existingKeys = new Set(backendModels.map(m => m.key));
-          creatorModels = creatorData
-            .filter((m: any) => !existingKeys.has(m.model_key))
-            .map(creatorToLocal);
-        }
-        setModels([...backendModels, ...creatorModels]);
-      } catch {} finally {
-        setLoading(false);
-      }
+      // Run both fetches in parallel — no more sequential await stalls
+      const [backendResult, creatorResult] = await Promise.allSettled([
+        fetchModels()
+          .then(bms => bms.map(backendToLocal))
+          .catch(() => [...MODELS_DATA]),
+        fetch('http://localhost:8000/api/deploy/marketplace', { signal: controller.signal })
+          .then(r => r.ok ? r.json() : [])
+          .catch(() => []),
+      ]);
+
+      const backendModels: Model[] = backendResult.status === 'fulfilled'
+        ? backendResult.value
+        : [...MODELS_DATA];
+
+      const creatorRaw: any[] = creatorResult.status === 'fulfilled' ? creatorResult.value : [];
+      const existingKeys = new Set(backendModels.map(m => m.key));
+      const creatorModels = creatorRaw
+        .filter((m: any) => !existingKeys.has(m.model_key))
+        .map(creatorToLocal);
+
+      setModels([...backendModels, ...creatorModels]);
+      setLoading(false);
     };
-    load();
+
+    load().catch(() => setLoading(false));
+
+    return () => {
+      clearTimeout(timeout);
+      controller.abort();
+    };
   }, []);
+
 
   const filtered = useMemo(() => {
     return models
